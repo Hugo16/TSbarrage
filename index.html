@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font: 14px Arial, Helvetica, sans-serif;
+            text-decoration: none;
+            outline: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .content {
+            width: 800px;
+            height: 500px;
+            margin: 100px auto;
+            background-color: #6d6b6a;
+        }
+
+        .content-full-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #6d6b6a;
+        }
+
+        .barrage-pond {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        .control-box {
+            width: 100%;
+            height: 40px;
+            padding: 4px 0;
+            background-color: #cdcdcd;
+            border: 1px solid black;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+        }
+
+        .control-box button {
+            padding: 0 10px;
+            height: 100%;
+            margin: 0 3px;
+            border-radius: 5px;
+            border: 1px solid #ffffff;
+            box-shadow: none;
+            background-color: #7ec7ff;
+            font-size: 14px;
+            font-weight: bolder;
+            color: white;
+            cursor: pointer;
+        }
+
+        .control-box button:hover {
+            background-color: #59aaff;
+        }
+
+        .control-box .btn-red {
+            background-color: #ff6156;
+        }
+
+        .control-box .btn-red:hover {
+            background-color: #ff0000;
+        }
+
+        .control-box .btn-green {
+            background-color: #85ff7d;
+        }
+
+        .control-box .btn-green:hover {
+            background-color: #00ff00;
+        }
+
+        .input-sent {
+            width: 300px;
+            height: 90%;
+            padding: 0 5px;
+        }
+
+        .position-content,
+        .size-content {
+            height: 100%;
+            position: relative;
+        }
+
+        .position-wrap,
+        .size-wrap {
+            position: absolute;
+            top: 0;
+            transform: translateY(-100%);
+            display: none;
+        }
+
+        .position-wrap button,
+        .size-wrap button {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="barrage-pond"></div>
+    <div class="control-box">
+        <button class="btn-red">红</button>
+        <button class="btn-green">绿</button>
+        <button class="btn-blue">蓝</button>
+        <input class="input-sent" type="text" title="">
+        <button class="btn-sent">发 送</button>
+        <button class="btn-loop">扫 射</button>
+        <div class="size-content">
+            <button class="btn-font-size">字体大小</button>
+            <div class="size-wrap">
+                <button class="btn-big">大</button>
+                <button class="btn-middle">中</button>
+                <button class="btn-small">小</button>
+            </div>
+        </div>
+        <div class="position-content">
+            <button class="btn-position">弹幕位置</button>
+            <div class="position-wrap">
+                <button class="btn-top">上</button>
+                <button class="btn-all">全</button>
+                <button class="btn-bottom">下</button>
+            </div>
+        </div>
+        <button class="btn-screen">全屏</button>
+    </div>
+</div>
+
+<script src="TSBarrage.js"></script>
+<script>
+    function getEle(name) {
+        return document.querySelectorAll(name);
+    }
+
+    var content = getEle(".content")[0];
+    var pond = getEle(".barrage-pond")[0];
+    var btnRed = getEle(".btn-red")[0];
+    var btnGreen = getEle(".btn-green")[0];
+    var btnBlue = getEle(".btn-blue")[0];
+    var btnSent = getEle(".btn-sent")[0];
+    var inputSent = getEle(".input-sent")[0];
+    var btnLoop = getEle(".btn-loop")[0];
+    var positionWrap = getEle(".position-wrap")[0];
+    var btnPosition = getEle(".btn-position")[0];
+    var btnTop = getEle(".btn-top")[0];
+    var btnAll = getEle(".btn-all")[0];
+    var btnBottom = getEle(".btn-bottom")[0];
+    var sizeWrap = getEle(".size-wrap")[0];
+    var btnFontSize = getEle(".btn-font-size")[0];
+    var btnBig = getEle(".btn-big")[0];
+    var btnMiddle = getEle(".btn-middle")[0];
+    var btnSmall = getEle(".btn-small")[0];
+    var btnScreen = getEle(".btn-screen")[0];
+    var positionTimer = null;
+    var loopTimer = null;
+    var tsb = new TSBarrage(pond);
+    var color = "pink";
+
+
+    // 颜色按钮
+    function setColor(index) {
+        color = ["#db5b5b", "#85ff7d", "#86a8f3"][index];
+    }
+
+    btnRed.onclick = function () {
+        setColor(0)
+    };
+    btnGreen.onclick = function () {
+        setColor(1)
+    };
+    btnBlue.onclick = function () {
+        setColor(2)
+    };
+
+    // 发送
+    btnSent.onclick = function () {
+        tsb.addBarrage({
+            text: inputSent.value,
+            color: color
+        });
+    };
+
+    // 扫射
+    btnLoop.onclick = function () {
+        if (!loopTimer) {
+            loopTimer = setInterval(function () {
+                tsb.addBarrage({
+                    text: inputSent.value,
+                    color: "yellow"
+                });
+            }, 200);
+        }
+        else {
+            clearInterval(loopTimer);
+            loopTimer = null;
+        }
+    };
+
+    // 改变弹幕池位置
+    btnPosition.onmouseenter = function () {
+        positionWrap.style.display = "block";
+    };
+    btnPosition.onmouseleave = function () {
+        positionTimer = setTimeout(function () {
+            positionWrap.style.display = "none";
+        }, 100);
+    };
+    positionWrap.onmouseover = function () {
+        clearTimeout(positionTimer);
+        this.style.display = "block";
+    };
+    positionWrap.onmouseleave = function () {
+        this.style.display = "none";
+    };
+    btnAll.onclick = function () {
+        tsb.changePosition(0);
+    };
+    btnTop.onclick = function () {
+        tsb.changePosition(1);
+    };
+    btnBottom.onclick = function () {
+        tsb.changePosition(2);
+    };
+
+    // 改变字体大小
+    btnFontSize.onmouseenter = function () {
+        sizeWrap.style.display = "block";
+    };
+    btnFontSize.onmouseleave = function () {
+        positionTimer = setTimeout(function () {
+            sizeWrap.style.display = "none";
+        }, 100);
+    };
+    sizeWrap.onmouseover = function () {
+        clearTimeout(positionTimer);
+        this.style.display = "block";
+    };
+    sizeWrap.onmouseleave = function () {
+        this.style.display = "none";
+    };
+    btnBig.onclick = function () {
+        tsb.changeFontSize(30);
+    };
+    btnMiddle.onclick = function () {
+        tsb.changeFontSize(24);
+    };
+    btnSmall.onclick = function () {
+        tsb.changeFontSize(18);
+    };
+
+    // 全屏
+    btnScreen.onclick = function () {
+        var docElm = content;
+        //W3C
+        if (docElm.requestFullscreen) {
+            docElm.requestFullscreen();
+        }
+        //FireFox
+        else if (docElm.mozRequestFullScreen) {
+            docElm.mozRequestFullScreen();
+        }
+        //Chrome等
+        else if (docElm.webkitRequestFullScreen) {
+            docElm.webkitRequestFullScreen();
+        }
+        //IE11
+        else if (docElm.msRequestFullscreen) {
+            docElm.msRequestFullscreen();
+        }
+    };
+
+    function changeClass() {
+        if (content.className === "content-full-screen") {
+            content.className = "content";
+            btnSmall.onclick();
+            btnAll.onclick();
+        }
+        else {
+            content.className = "content-full-screen";
+            btnMiddle.onclick();
+            btnAll.onclick();
+        }
+    }
+
+    document.addEventListener("fullscreenchange", function () {
+        changeClass();
+    }, false);
+
+    document.addEventListener("mozfullscreenchange", function () {
+        changeClass();
+    }, false);
+
+    document.addEventListener("webkitfullscreenchange", function () {
+        changeClass();
+    }, false);
+    document.addEventListener("msfullscreenchange", function () {
+        changeClass();
+    }, false);
+
+
+</script>
+</body>
+</html>
